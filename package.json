@@ -1,0 +1,29 @@
+{
+  "name": "microfrontend-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "host",
+    "remote-home",
+    "remote-common",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:host\" \"npm run dev:home\" \"npm run dev:common\" \"npm run dev:backend\"",
+    "dev:host": "npm run dev --workspace=host",
+    "dev:home": "npm run dev --workspace=remote-home",
+    "dev:common": "npm run dev --workspace=remote-common",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=host && npm run build --workspace=remote-home && npm run build --workspace=remote-common",
+    "preview": "concurrently \"npm run preview:host\" \"npm run preview:home\" \"npm run preview:common\"",
+    "preview:host": "npm run preview --workspace=host",
+    "preview:home": "npm run preview --workspace=remote-home",
+    "preview:common": "npm run preview --workspace=remote-common",
+    "start:backend": "npm run start --workspace=backend",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+

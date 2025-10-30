@@ -1,16 +1,10 @@
 import { Product } from '../services/api';
-import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
-
-  const handleAddToCart = () => {
-    addToCart(product);
-  };
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
       <div className="aspect-square bg-gray-100 overflow-hidden">
@@ -33,18 +27,18 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
         <button
-          onClick={handleAddToCart}
           className={`w-full py-2 rounded-lg font-medium transition-colors ${
             product.inStock
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-blue-600 text-white opacity-60 cursor-not-allowed'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
-          disabled={!product.inStock}
+          disabled
         >
-          {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+          Add to Cart (host-managed)
         </button>
       </div>
     </div>
   );
 }
+
 

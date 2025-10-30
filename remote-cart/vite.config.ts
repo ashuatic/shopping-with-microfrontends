@@ -6,30 +6,29 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'remoteCommon',
+      name: 'remoteCart',
       filename: 'remoteEntry.js',
       exposes: {
-        './Button': './src/components/Button',
-        './Card': './src/components/Card',
-        './Header': './src/components/Header',
-        './LeftNav': './src/components/LeftNav',
-        './ErrorBoundary': './src/components/ErrorBoundary',
+        './Cart': './src/components/Cart',
+      },
+      remotes: {
+        remoteCommon: 'http://localhost:5172/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom'],
-      dev: true, 
     }),
   ],
   build: {
     target: 'esnext',
     minify: false,
-    cssCodeSplit: false,
+    cssCodeSplit: true,
   },
   server: {
-    port: 5172,
+    port: 5173,
     cors: true,
   },
   preview: {
-    port: 5172,
+    port: 5173,
   },
 });
+
 

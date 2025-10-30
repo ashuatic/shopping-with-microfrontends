@@ -1,19 +1,26 @@
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useOrders } from '../context/OrdersContext';
+import { MouseEvent, lazy, Suspense } from 'react';
 
-export default function CartPage() {
-  const navigate = useNavigate();
-  const { items, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
-  const { addOrder } = useOrders();
+export interface CartItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
 
-  const handleBuy = () => {
-    const total = cartTotal * 1.1; // Including tax
-    addOrder(items, total);
-    clearCart();
-    navigate('/orders');
-  };
+export interface CartProps {
+  items: CartItem[];
+  cartTotal: number;
+  onUpdateQuantity: (id: number, quantity: number) => void;
+  onRemove: (id: number) => void;
+  onClear: () => void;
+  onBuy: (e?: MouseEvent) => void;
+}
 
+export default function Cart({ items, cartTotal, onUpdateQuantity, onRemove, onClear, onBuy }: CartProps) {
+  const Button = lazy(() => import('remoteCommon/Button'));
+  const Card = lazy(() => import('remoteCommon/Card'));
   if (items.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -42,20 +49,15 @@ export default function CartPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">Shopping Cart</h1>
-        <button
-          onClick={clearCart}
-          className="text-sm text-red-600 hover:text-red-700 font-medium"
-        >
-          Clear Cart
-        </button>
+        <Suspense fallback={<div className="w-24 h-8 bg-gray-200 rounded" />}> 
+          <Button onClick={onClear} variant="secondary">Clear Cart</Button>
+        </Suspense>
       </div>
 
       <div className="space-y-4">
         {items.map((item) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-lg shadow-md p-4 flex items-center gap-4"
-          >
+          <Suspense key={item.id} fallback={<div className="h-28 bg-gray-100 rounded" />}> 
+            <Card className="p-4 flex items-center gap-4">
             <img
               src={item.image}
               alt={item.name}
@@ -69,21 +71,21 @@ export default function CartPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
                   className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100"
                 >
                   -
                 </button>
                 <span className="w-12 text-center font-medium">{item.quantity}</span>
                 <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
                   className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-gray-100"
                 >
                   +
                 </button>
               </div>
               <button
-                onClick={() => removeFromCart(item.id)}
+                onClick={() => onRemove(item.id)}
                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                 aria-label="Remove from cart"
               >
@@ -102,12 +104,14 @@ export default function CartPage() {
                 </svg>
               </button>
             </div>
-          </div>
+            </Card>
+          </Suspense>
         ))}
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="space-y-4">
+      <Suspense fallback={<div className="h-48 bg-gray-100 rounded" />}> 
+        <Card className="p-6">
+          <div className="space-y-4">
           <div className="flex justify-between text-gray-800">
             <span className="text-lg font-medium">Subtotal</span>
             <span className="text-lg font-medium">Rs {cartTotal.toLocaleString()}</span>
@@ -122,18 +126,14 @@ export default function CartPage() {
               <span>Rs {(cartTotal * 1.1).toFixed(0)}</span>
             </div>
           </div>
-          <button
-            onClick={handleBuy}
-            className="w-full py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+          <Button onClick={onBuy}>
             Buy (Cash on Delivery)
-          </button>
-        </div>
-      </div>
+          </Button>
+          </div>
+        </Card>
+      </Suspense>
     </div>
   );
 }
+
 

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 
-export default function ProfilePage() {
+export default function Profile() {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     name: 'John Doe',
@@ -16,45 +16,35 @@ export default function ProfilePage() {
   };
 
   const handleSave = () => {
-    // TODO: Save profile data to backend
     setEditMode(false);
   };
+
+  const Button = lazy(() => import('remoteCommon/Button'));
+  const Card = lazy(() => import('remoteCommon/Card'));
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-800">My Profile</h1>
         {!editMode ? (
-          <button
-            onClick={() => setEditMode(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Edit Profile
-          </button>
+          <Suspense fallback={<div className="w-28 h-10 bg-gray-200 rounded" />}> 
+            <Button onClick={() => setEditMode(true)}>Edit Profile</Button>
+          </Suspense>
         ) : (
           <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setEditMode(false);
-                // Reset form data here if needed
-              }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Save Changes
-            </button>
+            <Suspense fallback={<div className="w-24 h-10 bg-gray-200 rounded" />}> 
+              <Button variant="secondary" onClick={() => setEditMode(false)}>Cancel</Button>
+            </Suspense>
+            <Suspense fallback={<div className="w-28 h-10 bg-gray-200 rounded" />}> 
+              <Button onClick={handleSave}>Save Changes</Button>
+            </Suspense>
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="space-y-6">
-          {/* Profile Picture */}
+      <Suspense fallback={<div className="h-96 bg-gray-100 rounded" />}> 
+        <Card className="p-6">
+          <div className="space-y-6">
           <div className="flex items-center gap-6">
             <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
               {formData.name.charAt(0).toUpperCase()}
@@ -66,7 +56,6 @@ export default function ProfilePage() {
           </div>
 
           <div className="border-t pt-6 space-y-4">
-            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
               {editMode ? (
@@ -82,7 +71,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               {editMode ? (
@@ -98,7 +86,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
               {editMode ? (
@@ -114,7 +101,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Address */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
               {editMode ? (
@@ -130,7 +116,6 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Bio */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
               {editMode ? (
@@ -146,12 +131,13 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-        </div>
-      </div>
+          </div>
+        </Card>
+      </Suspense>
 
-      {/* Account Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <Suspense fallback={<div className="h-28 bg-gray-100 rounded" />}> 
+          <Card className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,9 +149,11 @@ export default function ProfilePage() {
               <p className="text-2xl font-bold text-gray-800">12</p>
             </div>
           </div>
-        </div>
+          </Card>
+        </Suspense>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <Suspense fallback={<div className="h-28 bg-gray-100 rounded" />}> 
+          <Card className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,9 +165,11 @@ export default function ProfilePage() {
               <p className="text-2xl font-bold text-gray-800">8</p>
             </div>
           </div>
-        </div>
+          </Card>
+        </Suspense>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <Suspense fallback={<div className="h-28 bg-gray-100 rounded" />}> 
+          <Card className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,9 +181,11 @@ export default function ProfilePage() {
               <p className="text-2xl font-bold text-gray-800">4</p>
             </div>
           </div>
-        </div>
+          </Card>
+        </Suspense>
       </div>
     </div>
   );
 }
+
 

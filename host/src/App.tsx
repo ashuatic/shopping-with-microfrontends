@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { fetchAppConfig, AppConfig } from './services/api';
-import { LayoutProvider } from './context/LayoutContext';
-import { CartProvider } from './context/CartContext';
-import { OrdersProvider } from './context/OrdersContext';
-import ErrorBoundary from './components/ErrorBoundary';
-import Header from './components/Header';
-import LeftNav from './components/LeftNav';
-import HomePage from './components/HomePage';
-import CartPage from './components/CartPage';
-import OrdersPage from './components/OrdersPage';
-import ProfilePage from './components/ProfilePage';
+import { LayoutProvider, useLayout } from './context/LayoutContext';
+import { CartProvider, useCart } from './context/CartContext';
+import { OrdersProvider, useOrders } from './context/OrdersContext';
+const RemoteErrorBoundary = lazy(() => import('remoteCommon/ErrorBoundary'));
+const RemoteHeader = lazy(() => import('remoteCommon/Header'));
+const RemoteLeftNav = lazy(() => import('remoteCommon/LeftNav'));
+const RemoteHome = lazy(() => import('remoteHome/Home'));
+const RemoteCart = lazy(() => import('remoteCart/Cart'));
+// Removed local CartPage in favor of remote-cart
+const RemoteProfile = lazy(() => import('remoteProfile/Profile'));
+const RemoteOrders = lazy(() => import('remoteOrders/Orders'));
 import './App.css';
 
 function AppContent() {
@@ -52,6 +53,32 @@ function AppContent() {
     navigate('/cart');
   };
 
+  const CartRoute = () => {
+    const { items, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
+    const { addOrder } = useOrders();
+    const nav = useNavigate();
+
+    const handleBuy = () => {
+      const total = cartTotal * 1.1;
+      addOrder(items, total);
+      clearCart();
+      nav('/orders');
+    };
+
+    return (
+      <Suspense fallback={<div className="py-20 text-center text-gray-600">Loading cart...</div>}>
+        <RemoteCart
+          items={items}
+          cartTotal={cartTotal}
+          onUpdateQuantity={updateQuantity}
+          onRemove={removeFromCart}
+          onClear={clearCart}
+          onBuy={handleBuy}
+        />
+      </Suspense>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -83,33 +110,84 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <ErrorBoundary>
-        <Header
-          headerConfig={appConfig.headerConfig}
-          activeCategory={activeCategory}
-          onCategorySelect={handleCategorySelect}
-          onCartClick={handleCartClick}
-        />
-      </ErrorBoundary>
+      <RemoteErrorBoundary>
+        <Suspense fallback={<div className="h-16" />}>
+          <RemoteHeader
+            headerConfig={appConfig.headerConfig}
+            activeCategory={activeCategory}
+            onCategorySelect={handleCategorySelect}
+            onCartClick={handleCartClick}
+            cartCount={useCart().cartCount}
+            onToggleLeftNav={useLayout().toggleLeftNav}
+          />
+        </Suspense>
+      </RemoteErrorBoundary>
 
       <div className="flex flex-1">
         {/* Left Navigation */}
-        <ErrorBoundary>
-          <LeftNav leftNavConfig={appConfig.leftNavConfig} className="lg:block" />
-        </ErrorBoundary>
+        <RemoteErrorBoundary>
+          <Suspense fallback={<div className="w-64" />}>
+            <RemoteLeftNav
+              leftNavConfig={appConfig.leftNavConfig}
+              className="lg:block"
+              isOpen={useLayout().isLeftNavOpen}
+              cartCount={useCart().cartCount}
+              ordersCount={useOrders().orders.length}
+              onItemClick={(key, path) => {
+                if (key === 'profile') {
+                  navigate('/profile');
+                } else if (key === 'cart') {
+                  navigate('/cart');
+                } else if (key === 'orders') {
+                  navigate('/orders');
+                } else {
+                  navigate(path);
+                }
+              }}
+            />
+          </Suspense>
+        </RemoteErrorBoundary>
 
         {/* Main Content */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-7xl mx-auto">
-            <ErrorBoundary>
+            <RemoteErrorBoundary>
               <Routes>
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/orders" element={<OrdersPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/:productType" element={<HomePage />} />
-                <Route path="/" element={<HomePage />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <Suspense fallback={<div className="py-20 text-center text-gray-600">Loading profile...</div>}>
+                      <RemoteProfile />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <Suspense fallback={<div className="py-20 text-center text-gray-600">Loading orders...</div>}>
+                      <RemoteOrders orders={useOrders().orders} />
+                    </Suspense>
+                  }
+                />
+                <Route path="/cart" element={<CartRoute />} />
+                <Route
+                  path="/:productType"
+                  element={
+                    <Suspense fallback={<div className="py-20 text-center text-gray-600">Loading home...</div>}>
+                      <RemoteHome productType={activeCategory} />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/"
+                  element={
+                    <Suspense fallback={<div className="py-20 text-center text-gray-600">Loading home...</div>}>
+                      <RemoteHome productType={activeCategory} />
+                    </Suspense>
+                  }
+                />
               </Routes>
-            </ErrorBoundary>
+            </RemoteErrorBoundary>
           </div>
         </main>
       </div>

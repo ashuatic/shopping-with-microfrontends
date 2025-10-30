@@ -1,19 +1,21 @@
 import { useState } from 'react';
-import { NavItem } from '../services/api';
-import { useLayout } from '../context/LayoutContext';
-import { useCart } from '../context/CartContext';
 
-interface HeaderProps {
+export interface NavItem {
+  path: string;
+  title: string;
+}
+
+export interface HeaderProps {
   headerConfig: Record<string, NavItem>;
   onCategorySelect?: (category: string | undefined) => void;
   activeCategory?: string;
   onCartClick?: () => void;
+  cartCount?: number;
+  onToggleLeftNav?: () => void;
 }
 
-export default function Header({ headerConfig, onCategorySelect, activeCategory, onCartClick }: HeaderProps) {
+export default function Header({ headerConfig, onCategorySelect, activeCategory, onCartClick, cartCount = 0, onToggleLeftNav }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { toggleLeftNav } = useLayout();
-  const { cartCount } = useCart();
 
   const navItems = Object.entries(headerConfig);
 
@@ -26,9 +28,8 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
     <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="flex items-center h-16 pl-[10px]">
         <div className="flex items-center flex-1">
-          {/* Left Nav Toggle Button */}
           <button
-            onClick={toggleLeftNav}
+            onClick={onToggleLeftNav}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors mr-4"
             aria-label="Toggle left navigation"
           >
@@ -47,7 +48,6 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
             </svg>
           </button>
 
-          {/* Logo */}
           <button
             onClick={() => onCategorySelect?.('')}
             className="flex-shrink-0 hover:opacity-80 transition-opacity"
@@ -55,7 +55,6 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
             <h1 className="text-2xl font-bold text-blue-600">Shop</h1>
           </button>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-1 ml-6">
             {navItems.map(([key, item]) => (
               <button
@@ -73,7 +72,6 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
           </nav>
         </div>
 
-        {/* Cart Icon */}
         <div className="flex items-center gap-4 pr-4">
             <button
               onClick={onCartClick}
@@ -100,7 +98,6 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
               )}
             </button>
 
-            {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 rounded-lg hover:bg-gray-100"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -122,7 +119,6 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
           </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="px-4 pb-4">
           <nav className="md:hidden space-y-2">
@@ -145,4 +141,5 @@ export default function Header({ headerConfig, onCategorySelect, activeCategory,
     </header>
   );
 }
+
 

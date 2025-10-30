@@ -1,49 +1,31 @@
-import { useNavigate } from 'react-router-dom';
-import { NavItem } from '../services/api';
-import { useLayout } from '../context/LayoutContext';
-import { useCart } from '../context/CartContext';
-import { useOrders } from '../context/OrdersContext';
-
-interface LeftNavProps {
-  leftNavConfig: Record<string, NavItem>;
-  className?: string;
+export interface NavItem {
+  path: string;
+  title: string;
 }
 
-export default function LeftNav({ leftNavConfig, className = '' }: LeftNavProps) {
-  const navigate = useNavigate();
-  const { isLeftNavOpen } = useLayout();
-  const { cartCount } = useCart();
-  const { orders } = useOrders();
-  const navItems = Object.entries(leftNavConfig);
+export interface LeftNavProps {
+  leftNavConfig: Record<string, NavItem>;
+  className?: string;
+  isOpen: boolean;
+  cartCount?: number;
+  ordersCount?: number;
+  onItemClick: (key: string, path: string) => void;
+}
 
-  const handleItemClick = (key: string, path: string) => {
-    // Close the mobile nav when item is clicked
-    // Navigation will be handled based on the key
-    if (key === 'profile') {
-      navigate('/profile');
-    } else if (key === 'cart') {
-      navigate('/cart');
-    } else if (key === 'orders') {
-      navigate('/orders');
-    } else {
-      navigate(path);
-    }
-  };
+export default function LeftNav({ leftNavConfig, className = '', isOpen, cartCount = 0, ordersCount = 0, onItemClick }: LeftNavProps) {
+  const navItems = Object.entries(leftNavConfig);
 
   return (
     <>
-      {/* Overlay for mobile */}
-      {isLeftNavOpen && (
+      {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => {}}
         />
       )}
 
-      {/* Left Navigation */}
       <aside
         className={`fixed lg:sticky top-0 h-screen bg-white border-r border-gray-200 p-6 transform transition-transform duration-300 ease-in-out z-50 ${
-          isLeftNavOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         } ${className}`}
       >
         <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -54,19 +36,18 @@ export default function LeftNav({ leftNavConfig, className = '' }: LeftNavProps)
           {navItems.map(([key, item]) => (
             <button
               key={key}
-              onClick={() => handleItemClick(key, item.path)}
+              onClick={() => onItemClick(key, item.path)}
               className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors group"
             >
               <span className="flex-1 font-medium">{item.title}</span>
-              {/* Show badges for cart and orders */}
               {key === 'cart' && cartCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
-              {key === 'orders' && orders.length > 0 && (
+              {key === 'orders' && ordersCount > 0 && (
                 <span className="bg-blue-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {orders.length}
+                  {ordersCount}
                 </span>
               )}
               <svg
@@ -84,4 +65,5 @@ export default function LeftNav({ leftNavConfig, className = '' }: LeftNavProps)
     </>
   );
 }
+
 

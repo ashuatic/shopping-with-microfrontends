@@ -10,6 +10,9 @@ export default defineConfig({
       remotes: {
         remoteHome: 'http://localhost:5171/assets/remoteEntry.js',
         remoteCommon: 'http://localhost:5172/assets/remoteEntry.js',
+        remoteCart: 'http://localhost:5173/assets/remoteEntry.js',
+        remoteProfile: 'http://localhost:5174/assets/remoteEntry.js',
+        remoteOrders: 'http://localhost:5175/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom'],
     }),

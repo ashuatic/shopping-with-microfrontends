@@ -1,8 +1,27 @@
-import { useOrders } from '../context/OrdersContext';
+export interface OrderItem {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
 
-export default function OrdersPage() {
-  const { orders } = useOrders();
+export interface Order {
+  id: number;
+  date: string;
+  status: 'pending' | 'delivered' | 'cancelled';
+  total: number;
+  items: OrderItem[];
+}
 
+export interface OrdersProps {
+  orders: Order[];
+}
+
+import { lazy, Suspense } from 'react';
+
+export default function Orders({ orders }: OrdersProps) {
+  const Card = lazy(() => import('remoteCommon/Card'));
   if (orders.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -33,10 +52,8 @@ export default function OrdersPage() {
 
       <div className="space-y-4">
         {orders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600"
-          >
+          <Suspense key={order.id} fallback={<div className="h-48 bg-gray-100 rounded" />}> 
+            <Card className="p-6 border-l-4 border-blue-600">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Order #{order.id}</h3>
@@ -85,10 +102,12 @@ export default function OrdersPage() {
                 </div>
               ))}
             </div>
-          </div>
+            </Card>
+          </Suspense>
         ))}
       </div>
     </div>
   );
 }
+
 
